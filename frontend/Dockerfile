@@ -1,4 +1,3 @@
-# 多阶段构建
 # 阶段1: 构建阶段
 FROM node:18-alpine AS build
 
@@ -7,8 +6,8 @@ WORKDIR /app
 # 复制 package.json 和 package-lock.json
 COPY package*.json ./
 
-# 安装依赖
-RUN npm ci --only=production
+# 安装全部依赖
+RUN npm ci
 
 # 复制源代码
 COPY . .
