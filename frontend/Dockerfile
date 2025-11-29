@@ -18,10 +18,13 @@ RUN npm run build
 # 阶段2: 生产阶段
 FROM nginx:alpine
 
-# 复制构建结果到 nginx
+# 🔴 关键步骤：先删除 Nginx 默认的主配置文件（避免覆盖失败）
+RUN rm -f /etc/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+# 复制构建结果到 nginx（路径正确，和你的 Nginx 配置 root 对应）
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# 复制 nginx 配置
+# 复制你的自定义 Nginx 主配置（现在能确保覆盖成功）
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # 暴露端口
