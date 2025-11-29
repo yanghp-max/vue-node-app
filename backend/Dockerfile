@@ -13,7 +13,7 @@ RUN npm ci --only=production
 COPY . .
 
 # 暴露端口
-EXPOSE 5000
+EXPOSE 8081
 
 # 设置环境变量
 ENV NODE_ENV=production
