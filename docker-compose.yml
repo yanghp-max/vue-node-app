@@ -1,21 +1,76 @@
 version: '3.8'
 
 services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-${CONTAINER_NAME}  # 前缀固定，后缀通过变量控制
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 949941400
+      MYSQL_DATABASE: bsc
+      MYSQL_USER: yanghongpeng
+      MYSQL_PASSWORD: 949941400
+    volumes:
+      - mysql_data_${CONTAINER_NAME}:/var/lib/mysql  # 使用容器名作为卷名称的一部分
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: redis-${CONTAINER_NAME}  # 前缀固定，后缀通过变量控制
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=949941400  # 设置密码
+    volumes:
+      - redis_data_${CONTAINER_NAME}:/data  # 使用容器名作为卷名称的一部分
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "949941400", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # 后端服务
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: vue-node-backend
+    container_name: backend-${CONTAINER_NAME}  # 前缀固定，后缀通过变量控制
     ports:
-      - "5000:5000"
+      - "8081:8081"
     environment:
       - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=yanghongpeng
+      - DB_PASSWORD=949941400
+      - DB_NAME=bsc
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=949941400  # 设置 Redis 密码
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -25,7 +80,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: vue-node-frontend
+    container_name: frontend-${CONTAINER_NAME}  # 前缀固定，后缀通过变量控制
     ports:
       - "80:80"
     depends_on:
@@ -33,6 +88,10 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+
+volumes:
+  mysql_data_${CONTAINER_NAME}:  # 使用容器名作为卷名称的一部分
+  redis_data_${CONTAINER_NAME}:  # 使用容器名作为卷名称的一部分
 
 networks:
   app-network:

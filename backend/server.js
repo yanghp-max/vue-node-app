@@ -1,5 +1,10 @@
 const express = require('express')
 const cors = require('cors')
+require('dotenv').config()
+
+const { testConnection, initDatabase } = require('./config/database')
+const { connectRedis } = require('./config/redis')
+
 const app = express()
 const PORT = process.env.PORT || 8081
 
@@ -7,14 +12,35 @@ const PORT = process.env.PORT || 8081
 app.use(cors())
 app.use(express.json())
 
+// 初始化数据库和Redis连接
+async function initializeServices() {
+  // 连接 MySQL
+  const dbConnected = await testConnection()
+  if (dbConnected) {
+    await initDatabase()
+  }
+  
+  // 连接 Redis
+  await connectRedis()
+}
+
+initializeServices()
+
+// 导入路由
+const userRoutes = require('./routes/users')
+
 // 路由
 app.get('/', (req, res) => {
   res.json({
     message: 'Node.js API 服务器运行中',
     version: '1.0.0',
+    features: ['MySQL', 'Redis'],
     timestamp: new Date().toISOString()
   })
 })
+
+// 用户路由
+app.use('/api/users', userRoutes)
 
 app.get('/api/hello', (req, res) => {
   res.json({
@@ -57,6 +83,6 @@ app.use((req, res) => {
   })
 })
 
-app.listen(PORT, () => {
-  console.log(`服务器运行在 http://localhost:${PORT}`)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`服务器运行在 http://0.0.0.0:${PORT}`)
 })
