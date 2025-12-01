@@ -13,7 +13,7 @@ services:
       MYSQL_USER: yanghongpeng
       MYSQL_PASSWORD: 949941400
     volumes:
-      - mysql_data_${CONTAINER_NAME}:/var/lib/mysql  # 使用容器名作为卷名称的一部分
+      - mysql_data${CONTAINER_NAME}:/var/lib/mysql  # 使用容器名作为卷名称的一部分
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-network
@@ -33,7 +33,7 @@ services:
     environment:
       - REDIS_PASSWORD=949941400  # 设置密码
     volumes:
-      - redis_data_${CONTAINER_NAME}:/data  # 使用容器名作为卷名称的一部分
+      - redis_data${CONTAINER_NAME}:/data  # 使用容器名作为卷名称的一部分
     networks:
       - app-network
     restart: unless-stopped
@@ -90,8 +90,8 @@ services:
     restart: unless-stopped
 
 volumes:
-  mysql_data_${CONTAINER_NAME}:  # 使用容器名作为卷名称的一部分
-  redis_data_${CONTAINER_NAME}:  # 使用容器名作为卷名称的一部分
+  mysql_data${CONTAINER_NAME}:  # 使用容器名作为卷名称的一部分
+  redis_data${CONTAINER_NAME}:  # 使用容器名作为卷名称的一部分
 
 networks:
   app-network:
