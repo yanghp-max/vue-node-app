@@ -21,7 +21,7 @@ async function initializeServices() {
   }
   
   // 连接 Redis
-  await connectRedis()
+  // await connectRedis()
 }
 
 initializeServices()
