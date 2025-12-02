@@ -3,7 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 
 const { testConnection, initDatabase } = require('./config/database')
-// const { connectRedis } = require('./config/redis')
+const { connectRedis } = require('./config/redis')
 
 const app = express()
 const PORT = process.env.PORT || 8081
@@ -14,17 +14,49 @@ app.use(express.json())
 
 // 初始化数据库和Redis连接
 async function initializeServices() {
-  // 连接 MySQL
-  const dbConnected = await testConnection()
-  if (dbConnected) {
-    await initDatabase()
+  try {
+    // 连接 MySQL
+    const dbConnected = await testConnection()
+    if (dbConnected) {
+      await initDatabase()
+    }
+    
+    // 连接 Redis
+    await connectRedis()
+    console.log('所有服务初始化完成')
+  } catch (error) {
+    console.error('服务初始化失败:', error.message)
   }
-  
-  // 连接 Redis
-  // await connectRedis()
 }
 
 initializeServices()
+
+// 优雅关闭处理
+process.on('SIGTERM', async () => {
+  console.log('收到 SIGTERM 信号，开始优雅关闭...')
+  try {
+    const { disconnectRedis } = require('./config/redis')
+    await disconnectRedis()
+    console.log('服务已优雅关闭')
+    process.exit(0)
+  } catch (error) {
+    console.error('关闭过程中出错:', error.message)
+    process.exit(1)
+  }
+})
+
+process.on('SIGINT', async () => {
+  console.log('收到 SIGINT 信号，开始优雅关闭...')
+  try {
+    const { disconnectRedis } = require('./config/redis')
+    await disconnectRedis()
+    console.log('服务已优雅关闭')
+    process.exit(0)
+  } catch (error) {
+    console.error('关闭过程中出错:', error.message)
+    process.exit(1)
+  }
+})
 
 // 导入路由
 const userRoutes = require('./routes/users')
@@ -54,17 +86,7 @@ app.get('/api/hello', (req, res) => {
   })
 })
 
-app.get('/api/users', (req, res) => {
-  const users = [
-    { id: 1, name: '张三', email: 'zhangsan@example.com' },
-    { id: 2, name: '李四', email: 'lisi@example.com' },
-    { id: 3, name: '王五', email: 'wangwu@example.com' }
-  ]
-  res.json({
-    message: '用户列表获取成功',
-    users: users
-  })
-})
+// 这个路由已经被 /api/users 路由模块替代，这里删除重复的
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
