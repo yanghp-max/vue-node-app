@@ -2,7 +2,7 @@ const redis = require('redis');
 require('dotenv').config();
 
 const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
+  host: process.env.REDIS_HOST || 'test_redis',
   port: process.env.REDIS_PORT || 6379,
   password: process.env.REDIS_PASSWORD || 'yanghongpeng',
   retryDelayOnFailover: 100,
