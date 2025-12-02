@@ -3,7 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 
 const { testConnection, initDatabase } = require('./config/database')
-const { connectRedis } = require('./config/redis')
+// const { connectRedis } = require('./config/redis')
 
 const app = express()
 const PORT = process.env.PORT || 8081
