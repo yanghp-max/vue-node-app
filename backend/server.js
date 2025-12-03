@@ -31,22 +31,9 @@ async function initializeServices() {
 
 initializeServices()
 
-// 优雅关闭处理
-process.on('SIGTERM', async () => {
-  console.log('收到 SIGTERM 信号，开始优雅关闭...')
-  try {
-    const { disconnectRedis } = require('./config/redis')
-    await disconnectRedis()
-    console.log('服务已优雅关闭')
-    process.exit(0)
-  } catch (error) {
-    console.error('关闭过程中出错:', error.message)
-    process.exit(1)
-  }
-})
-
-process.on('SIGINT', async () => {
+process.on('SIGINT', async (info) => {
   console.log('收到 SIGINT 信号，开始优雅关闭...')
+  console.log('info>>',info)
   try {
     const { disconnectRedis } = require('./config/redis')
     await disconnectRedis()
